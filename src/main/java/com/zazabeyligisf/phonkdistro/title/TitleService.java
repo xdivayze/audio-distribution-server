@@ -52,8 +52,6 @@ public class TitleService {
         ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
         AudioInputStream ais = AudioSystem.getAudioInputStream(bais);
 
-        int bytesPerFrame = ais.getFormat().getFrameSize();
-
         byte[] buffer = new byte[2048];
         int bytesRead = -1;
 
