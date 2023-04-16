@@ -3,11 +3,9 @@ package com.zazabeyligisf.phonkdistro.title;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import org.hibernate.collection.spi.PersistentSet;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,6 +14,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "phonks")
 @Builder
+@Getter
 public class Title {
 
     @Id

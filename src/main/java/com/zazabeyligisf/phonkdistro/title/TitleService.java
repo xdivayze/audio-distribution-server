@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.collection.spi.PersistentSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +15,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.Set;
-import java.util.UUID;
+import java.nio.file.Path;
+import java.util.*;
 
-//TODO INCREASE BUFFER SIZE
-//TODO SOMEHOW IMPROVE WAVE QUALITY
-
+//TODO SOMEHOW IMPROVE WAVE QUALITY OR ADD TO CHANGE MP3
+//TODO SEND LISTS OF SONGS AND DISTRIBUTE THEM
 @Slf4j
 @Service
 public class TitleService {
@@ -32,30 +32,20 @@ public class TitleService {
         this.repository = repository;
     }
 
-    public int persistTitle(String json) {
-        try {
-            TitleDTO t = gson.fromJson(json, TitleDTO.class);
-            UUID rD = UUID.randomUUID();
-            repository.save(Title.builder()
-                    .additions(Set.of(t.getAdditionals().split(",")))
-                    .id(rD)
-                    .path("src/main/songs/" + rD + ".mp3")
-                    .owner(t.getOwner())
-                    .name(t.getName())
-                    .build());
-            log.info("Successfully persisted title: \n" + json);
-            return 0;
-        } catch (Exception e) {
-            throw e;
-//            return -1;
-        }
-    }
 
     public ResponseEntity<String> handleUpload(String json) throws IOException, UnsupportedAudioFileException {
 
 
-
         JsonObject payload = JsonParser.parseString(json).getAsJsonObject();
+        UUID rn = UUID.randomUUID();
+        repository.save(Title.builder()
+                .id(rn)
+                .name(String.valueOf(payload.get("name")))
+                .owner(String.valueOf(payload.get("owner")))
+                .additions(Set.of(payload.get("additions").getAsString().split(",")))
+                .path("src/main/songs/" + rn + "output.wav")
+                .build());
+
         String fileB64 = payload.get("mp3file").getAsString();
         byte[] fileBytes = Base64.getDecoder().decode(fileB64);
 
@@ -63,7 +53,7 @@ public class TitleService {
         AudioInputStream ais = AudioSystem.getAudioInputStream(bais);
 
         int bytesPerFrame = ais.getFormat().getFrameSize();
-        int bufferSize = 2048*bytesPerFrame;
+        int bufferSize = 2048 * bytesPerFrame;
 
         byte[] buffer = new byte[2048];
         int bytesRead = -1;
@@ -76,14 +66,19 @@ public class TitleService {
 
         byte[] processed = outputStream.toByteArray();
 
-        AudioFormat wavFormat = new AudioFormat(44100, 16, 1, true, false);
-
         ByteArrayInputStream bais1 = new ByteArrayInputStream(processed);
         AudioInputStream ais1 = new AudioInputStream(bais1, new AudioFormat(44100, 16, 2, true, false), processed.length / 4);
 
-        File outputWavFile = new File("src/main/songs/"+payload.get("name")+"output.wav");
-        AudioSystem.write(ais1, AudioFileFormat.Type.WAVE, outputWavFile);
+        try {
+            File outputWavFile = new File(Path.of(repository.findById(rn).get().getPath()).toUri());
+            AudioSystem.write(ais1, AudioFileFormat.Type.WAVE, outputWavFile);
+            return new ResponseEntity<>("Upload successful for:\n " + repository.findById(rn).get().getName(), HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>("Upload unsuccessful due to error:\n " + e.getMessage(), HttpStatus.valueOf(500));
+        }
 
-        return null;
+
+
     }
 }

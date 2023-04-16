@@ -22,11 +22,6 @@ public class TitleController {
         this.service = service;
     }
 
-    @PostMapping("/persist")
-    public int persistTitle(@RequestBody String json) {
-        return service.persistTitle(json);
-    }
-
     @PostMapping("/upload")
     public ResponseEntity<String> handleUpload(@RequestBody String json) throws UnsupportedAudioFileException, IOException {
         return service.handleUpload(json);
