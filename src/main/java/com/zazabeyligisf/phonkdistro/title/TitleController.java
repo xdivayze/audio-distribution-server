@@ -2,11 +2,9 @@ package com.zazabeyligisf.phonkdistro.title;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 
@@ -25,5 +23,15 @@ public class TitleController {
     @PostMapping("/upload")
     public ResponseEntity<String> handleUpload(@RequestBody String json) throws UnsupportedAudioFileException, IOException {
         return service.handleUpload(json);
+    }
+
+    @GetMapping("/querify")
+    public String handleQuery(@RequestParam String s) {
+        return service.returnList(s);
+    }
+
+    @GetMapping("/play")
+    public String playMusic(@RequestParam String s) throws UnsupportedAudioFileException, LineUnavailableException, IOException {
+        return service.playMusic(s);
     }
 }
