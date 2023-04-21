@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "phonks")
+@Table(name = "titles")
 @Builder
 @Getter
 public class Title {
@@ -23,7 +23,7 @@ public class Title {
     @Column(name = "name", length = 50, nullable = false, unique = true)
     private String name;
 
-    @Column(name = "owner_name", length = 50, nullable = false, unique = true)
+    @Column(name = "owner_name", length = 50, nullable = false)
     private String owner;
 
     @Column(name = "path", nullable = false, unique = true)
