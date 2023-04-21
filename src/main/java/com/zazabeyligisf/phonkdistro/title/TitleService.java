@@ -24,14 +24,22 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class TitleService {
+    public static final Path projectDir = Path.of(System.getProperty("user.dir")+"/");
+    private static final File songDir;
     private static final int BUFFER_SIZE = 2048;
     final Gson gson;
     final TitleRepository repository;
+
+    static {
+        songDir = new File(projectDir.toFile(), "songs");
+        songDir.mkdirs();
+    }
 
     @Autowired
     public TitleService(Gson gson, TitleRepository repository) {
         this.gson = gson;
         this.repository = repository;
+        log.info(projectDir.toString());
     }
 
     String playMusic(String n) throws IOException {
@@ -58,7 +66,7 @@ public class TitleService {
                 .name(payload.get("name").getAsString())
                 .owner(payload.get("owner").getAsString())
                 .additions(Set.of(payload.get("additions").getAsString().split(",")))
-                .path("/home/cavej/IdeaProjects/PhonkDistro/src/main/songs/" + rn + "output.wav")
+                .path(songDir.getAbsolutePath()+"/" + rn + "output.wav")
                 .build());
 
         String fileB64 = payload.get("mp3file").getAsString();
